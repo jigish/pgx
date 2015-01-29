@@ -388,7 +388,7 @@ type NullTime struct {
 }
 
 func (n *NullTime) Scan(vr *ValueReader) error {
-	if vr.Type().DataType != TimestampTzOid {
+	if vr.Type().DataType != TimestampTzOid && vr.Type().DataType != TimestampOid {
 		return SerializationError(fmt.Sprintf("NullTime.Scan cannot decode OID %d", vr.Type().DataType))
 	}
 
@@ -398,7 +398,11 @@ func (n *NullTime) Scan(vr *ValueReader) error {
 	}
 
 	n.Valid = true
-	n.Time = decodeTimestampTz(vr)
+	if vr.Type().DataType == TimestampTzOid {
+		n.Time = decodeTimestampTz(vr)
+	} else {
+		n.Time = decodeTimestamp(vr)
+	}
 
 	return vr.Err()
 }
